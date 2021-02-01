@@ -4,8 +4,8 @@ kind: Kustomization
 images:
 - name: kanboard
   newName: qgja/kanboard
-  newTag: buster-64978f3e
+  newTag: buster-4e7edb63
 resources:
 - ./config
-- ./ingress # Comment this line to delete ingress and tls certificate
+- ./ingress
 - ./deployment.yaml
