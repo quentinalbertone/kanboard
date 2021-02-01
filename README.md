@@ -28,15 +28,15 @@ Results
 ========
 ### Dockerfile
 The Dockerfile I made is located here `Dockerfile/Dockerfile.buster` with the original Dockerfile provided by the kanboard project.
-As the subject told me to dockerised the application, I choose not to update any original files. It may add overhead during the build of the image but also add the possibility to choose between `alpine` or `buster` images.
+As the subject told me to dockerise the application, I choose not to update any original files. It may add overhead during the build of the image but also add the possibility to choose between `alpine` or `buster` images.
 
+> I'm pretty sure, I read that some part of the project need root privileged, so I let default docker user
 ### docker-compose
-I imagined a developer which try to test its application, so I created a docker-compose located at the root of the repository. This docker-compose build the image each time someone launch it with `docker-compose up --build`. It cause a additional time before the test, with the play of layers and cache in docker this additional time remains small.
-In production the kanboard project will be launch with a database (easier to backup, manage, mutualisation, ...), in my project postgresql. So I add a postgresql database on the docker-compose.
+I imagined a developer which try to test its application, so I created a docker-compose located at the root of the repository. This docker-compose build the image each time someone launchs it with `docker-compose up --build`. It causes an additional time before the test, with the play of layers and cache in docker this additional time remains small.
+In production the kanboard project will be launched with a database (easier to backup, manage, mutualisation, ...), in my project postgresql. So I add a postgresql database on the docker-compose.
 
->
 ### Kubernetes
-In order to deploy kanboard on kubernetes, I made a little kustomize, located on the directory `k8s/bases/kustomization.yaml`
+In order to deploy kanboard on kubernetes, I made a little kustomize, located on the directory `k8s/bases/kustomization.yaml`.
 This project will link and kustomize :
 * deployment.yaml : kind StatefulSet because it's easier to manage when we are dealing with pv/pvc
 * service.yaml : simple service in order to join kanboard pods
@@ -46,7 +46,9 @@ This project will link and kustomize :
 > The optional parts can be deleted by commenting the line k8s/kustomization.yaml:10 (`- ./ingress # Comment this line to delete ingress and tls certificate`)
 
 I assumed that a postgresql would already be on the kubernetes cluster, In order to deploy one and create the secret which is required by the kanboard deployment, you need to use the little script `k8s/postgresql/secret.sh` by using the folowing command `./secret.sh <namespace>` (should be the same namespace fill in the kustomize `k8s/bases/kustomization.yaml`).
+
 > The script will install bitnami-labs/sealed-secrets, in order to cypher the secret. It allows devops to push secret on git without any worries.
+> I'm pretty sure, I read that some part of the project need root privileged, so I let default docker user
 
 ### Pipeline
 The buster image is build every push on main thnaks to github action `.github/workflows/ci.yaml`. Yhis workflow will build the image, push it on dockerhub (with the short hash of the commit) then update the kustomize.
@@ -76,3 +78,11 @@ spec:
     - CreateNamespace=true
 ```
 > Life is simplier with automated deployment
+
+terms and conditions of the exercis
+======
+### Time
+I spent 5 hours on this exercice: three hours saturday, one sunday and one monday (and 1h for the readme : relaunch every thing, correct some typo in the kustomize, the readme, check the cicd)
+
+### Difficulties encountered
+It's been a while since I didn't play with php stack, so I took a lot of time in order to "get back in the bath". I also got some difficulties with the "translation" between alpine to "debian" system (the whole project is based on alpine and some `s6` script use different binary name or configuration)

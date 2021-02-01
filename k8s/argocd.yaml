@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kanboard
+  namespace: argocd
+spec:
+  destination:
+    namespace: kanboard
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: k8s/bases
+    repoURL: https://github.com/quentinalbertone/kanboard
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
