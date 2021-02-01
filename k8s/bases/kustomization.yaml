@@ -7,5 +7,5 @@ images:
   newTag: buster-738b341f
 resources:
 - ./config
-- ./ingress
+- ./ingress # Comment this line to delete ingress and tls certificate
 - ./deployment.yaml
