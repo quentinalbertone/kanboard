@@ -1,0 +1,12 @@
+<phpunit stopOnError="true" stopOnFailure="true" colors="true">
+    <testsuites>
+        <testsuite name="Kanboard">
+            <directory>integration</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <const name="BASE_URL" value="http://127.0.0.1/" />
+        <const name="API_URL" value="http://127.0.0.1/jsonrpc.php" />
+        <const name="API_KEY" value="test" />
+    </php>
+</phpunit>

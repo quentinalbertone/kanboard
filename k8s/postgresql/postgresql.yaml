@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  revisionHistoryLimit: 5
+  replicas: 1
+  serviceName: kanboard
+  selector:
+    matchLabels:
+      name: postgres
+  template:
+    metadata:
+      labels:
+        name: postgres
+    spec:
+      containers:
+        - image: postgres:10-alpine
+          name: postgres
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/db-files/
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: username
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database
+          ports:
+            - containerPort: 5432
+              name: postgresport
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgresport
+  selector:
+    name: postgres
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

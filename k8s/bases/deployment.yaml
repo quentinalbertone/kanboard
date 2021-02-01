@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kanboard
+spec:
+  revisionHistoryLimit: 5
+  replicas: 1
+  serviceName: kanboard
+  selector:
+    matchLabels:
+      name: test-kanboard
+  template:
+    metadata:
+      labels:
+        name: test-kanboard
+    spec:
+      containers:
+        - name: kanboard
+          image: kanboard/kanboard
+          env:
+            - name: DB_DRIVER
+              value: 'postgres'
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: postgresql
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgresql
+            - name: DB_HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  key: host
+                  name: postgresql
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: database
+                  name: postgresql
+
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: kanboard-config
+              mountPath: /var/www/app/config.php
+              subPath: config.php
+            - name: kanboard-pvc
+              mountPath: /var/www/app/data
+              subPath: data
+            - name: kanboard-pvc
+              mountPath: /var/www/app/plugins
+              subPath: plugins
+      volumes:
+        - name: kanboard-config
+          configMap:
+            name: kanboard-config
+        - name: kanboard-pvc
+          persistentVolumeClaim:
+            claimName: kanboard-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kanboard-svc
+spec:
+  selector:
+    name: test-kanboard
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: http
+  type: ClusterIP
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kanboard-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

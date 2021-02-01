@@ -1,0 +1,38 @@
+# docker build -f Dockerfile/Dockerfile -t test:0.1.3 .
+FROM php:7-fpm-buster
+ENV TERM linux
+ENV DEBIAN_FRONTEND noninteractive
+
+
+VOLUME /var/www/app/data
+VOLUME /var/www/app/plugins
+VOLUME /etc/nginx/ssl
+
+# && apt-get install -y  apt-utils\
+RUN apt-get update -y --no-install-recommends --no-install-suggests\
+    && apt-get install -y --no-install-recommends --no-install-suggests \
+    tzdata openssl unzip nginx s6 curl msmtp bsd-mailx execline rsyslog cron\
+    libzip-dev libpq-dev libpng-dev libldap2-dev libmcrypt-dev bash fcgiwrap\
+    && rm -rf /var/www/localhost \
+    && rm -f /etc/php7/php-fpm.d/www.conf
+RUN set -x \
+    && addgroup --system nginx \
+    && adduser --system --disabled-login --ingroup nginx --no-create-home --force-badname --disabled-password  \
+    --gecos "nginx user" --shell /bin/false  nginx
+RUN docker-php-ext-install opcache zip pdo_mysql pdo_pgsql bcmath gd sockets ldap opcache \
+    && pecl install mcrypt \
+    && docker-php-ext-enable mcrypt
+
+ADD . /var/www/app
+ADD docker/ /
+
+## Update for php php:7-fpm-buster : the goal was to dockerise the application, so I intentionally didn't touch the original application and made some update during the build of the docker image
+RUN sed -i 's/crond/cron/g' /etc/services.d/cron/run && cat /etc/services.d/cron/run
+RUN sed -i 's/php-fpm7/php-fpm --fpm-config \/etc\/php7\/php-fpm.conf/g' /etc/services.d/php/run && cat /etc/services.d/php/run
+RUN cp /usr/lib/execline/bin/execlineb /bin/execlineb
+RUN cp /usr/bin/s6-svscan /bin/s6-svscan
+##
+
+RUN apt-get remove --purge --auto-remove -y && rm -rf /var/lib/apt/lists/*
+RUN rm -rf /var/www/app/docker && echo $VERSION > /version.txt
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

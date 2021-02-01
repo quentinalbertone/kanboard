@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: kanboard-ing
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - $(URL) #kanboard.niernen.com
+      secretName: kanboard-tls
+  rules:
+    - host: $(URL) #kanboard.niernen.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: kanboard-svc
+              servicePort: 8080
