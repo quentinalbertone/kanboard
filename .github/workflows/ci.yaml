@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  push:
+    branches: main
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build and push
+        uses: docker/build-push-action@v1.1.2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/kanboard
+          path: .
+          dockerfile: ./Dockerfile/Dockerfile.buster
+          push: true
+          tags: buster-${{ github.sha }}, latest
