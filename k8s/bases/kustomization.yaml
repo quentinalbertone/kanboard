@@ -4,7 +4,7 @@ kind: Kustomization
 images:
 - name: kanboard
   newName: qgja/kanboard
-  newTag: buster-2b8c2390
+  newTag: buster-738b341f
 resources:
 - ./config
 - ./ingress
